@@ -1,60 +1,54 @@
 <template>
-  <table>
-    <thead>
-    <tr>
-      <th>Id</th>
-      <th>UserName</th>
-      <th>Title</th>
-      <th>Completed</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr v-for="(item, index) in items" :key="index">
-      <td>{{ item.id }}</td>
-      <td>{{ adapterUserNameById(item.userId) }}</td>
-      <td>{{ item.title }}</td>
-      <td>{{ item.completed ? '✓' : '⤫' }}</td>
-    </tr>
-    </tbody>
-  </table>
+  <div class="table-container">
+    <table class="table">
+      <thead>
+      <tr>
+        <th v-for="column in columns" :key="column.id">{{ column.title }}</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="item in data" :key="item[columns[0].id]">
+        <td v-for="column in columns" :key="`${item[columns[0].id]}-${column.id}`">{{ item[column.id] }}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'Table',
-  props: ['items', 'users'],
-  methods: {
-    adapterUserNameById(id){
-      if (!this.users.length) return;
-
-      return this.users.find((user) => user.id === id).username
-    }
-  },
+  props: ['columns', 'data'],
 }
 </script>
 <style lang="scss" scoped>
-table {
-  width: 70%;
-  margin: 0 auto;
-  border-spacing: 0;
+.table-container{
+  max-width: 1200px;
+  padding: 0 15px;
+  margin: 10px auto;
 
-  td, th {
-    border-bottom: 0.1rem solid rgba(0, 0, 0, 0.05);
-  }
+  .table {
+    margin: 0 auto;
+    border-spacing: 0;
 
-  th {
-    padding: 2.0rem 1.0rem;
-    text-align: center;
-  }
+    td, th {
+      border-bottom: 0.1rem solid rgba(0, 0, 0, 0.05);
+    }
 
-  td {
-    text-align: center;
-    padding: 0.5rem 1.0rem;
-    transition: all 0.3s ease;
-  }
+    th {
+      padding: 2.0rem 1.0rem;
+      text-align: center;
+    }
 
-  tr:hover td {
-    background: rgba(0, 0, 0, 0.03);
+    td {
+      text-align: center;
+      padding: 0.5rem 1.0rem;
+      transition: all 0.3s ease;
+    }
+
+    tr:hover td {
+      background: rgba(0, 0, 0, 0.03);
+    }
   }
 }
 </style>

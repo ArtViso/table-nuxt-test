@@ -37,9 +37,9 @@ export default {
     &__input {
       margin: 0 auto;
       display: block;
-      width: 70%;
+      width: 45%;
       height: calc(2.25rem + 2px);
-      padding: 0.375rem 0.75rem;
+      padding: 0 15px;
       font-family: inherit;
       font-size: 1rem;
       font-weight: 400;
