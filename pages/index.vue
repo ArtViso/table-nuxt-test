@@ -1,22 +1,20 @@
 <template>
-  <div class="table">
+  <div>
     <div v-if="error">
-      <h2>{{ errorMessage }}</h2>
+      <h2>{{ error }}</h2>
     </div>
     <div v-if="!error">
       <Input
-        v-model.lazy="value"
+        v-model.lazy="searchValue"
       />
       <Table
         :columns="columns"
-        :data="pageList"
+        :data="currentPageList"
       />
       <Pagination
-        :page-numbers="chuckedList.length"
-        :chosen-page="currentPageNumber"
+        :total-pages="totalPages"
+        :current-page="currentPageNumber"
         @changePage="setPage"
-        @increasePageNumber="increasePageNumber"
-        @decreasePageNumber="decreasePageNumber"
       />
     </div>
   </div>
@@ -26,19 +24,17 @@ export default {
   name: 'IndexPage',
   data() {
     return {
-      value: '',
+      searchValue: '',
       todosList: [],
-      usersList: [],
-      pageList: [],
-      chuckedList: [],
-      filterTodoList: [],
+      usersList: {},
+      filteredTodoList: [],
       columns: [
         {
           id: 'id',
           title: 'Id'
         },
         {
-          id: 'username',
+          id: 'userName',
           title: 'UserName'
         },
         {
@@ -50,8 +46,8 @@ export default {
           title: 'Completed'
         }
       ],
-      error: false,
-      errorMessage: '',
+      perPage: 25,
+      error: null,
       currentPageNumber: 0,
     }
   },
@@ -64,71 +60,61 @@ export default {
   methods: {
     async getUsers() {
       try {
-        this.usersList = (await this.$axios.$get('/users'))
-        console.log(this.usersList)
+        const users = await this.$axios.$get('/users')
+        this.usersList = users.reduce((acc, item) => {
+          acc[item.id] = item
+          return acc
+        }, {})
       } catch (error) {
-        this.errorMessage = error.response.data.message
-        this.error = true;
+        this.error = error.response.data.message
       }
     },
 
     async getTodos() {
       try {
         this.todosList = (await this.$axios.$get('/todos')).map(todo => {
-          console.log(this.usersList)
           return {
             ...todo,
-            userName: this.usersList.find((user) => user.id === todo.userId).username,
+            userName: this.usersList[todo.userId].username,
             completed: todo.completed ? '✓' : '⤫'
           }
         })
-        this.filterTodoList = [...this.todosList];
-        this.chuckedArray(this.todosList)
+        this.filteredTodoList = [...this.todosList];
       } catch (error) {
-        this.errorMessage = error.response.data.message;
-        this.error = true;
+        this.error = error.response.data.message
       }
     },
 
     setPage(index) {
       this.currentPageNumber = index;
-      this.pageList = this.chuckedList[index]
     },
-    increasePageNumber() {
-      if (this.currentPageNumber === this.chuckedList.length - 1) return
-      this.currentPageNumber += 1;
-      this.pageList = this.chuckedList[this.currentPageNumber];
-    },
-    decreasePageNumber() {
-      if (this.currentPageNumber === 0) return
-      this.currentPageNumber -= 1;
-      this.pageList = this.chuckedList[this.currentPageNumber];
-    },
-    chuckedArray(array) {
-      for (let i = 0; i <= array.length; i += 25) {
-        this.chuckedList.push(array.slice(i, i + 25))
-      }
-      this.chuckedList = this.chuckedList.filter(arr => arr.length)
-      this.pageList = this.chuckedList[0]
-    },
+
     filterItems() {
-      this.filterTodoList = this.todosList.filter((item) => {
-        return item.title.includes(this.value);
+      if (!this.searchValue) {
+        return this.filteredTodoList = [...this.todosList];
+      }
+      this.filteredTodoList = this.todosList.filter((item) => {
+        return item.title.includes(this.searchValue);
       });
-      this.chuckedList = [];
-      this.chuckedArray(this.filterTodoList);
+      this.currentPageNumber = 0;
     }
   },
+  computed: {
+    currentPageList() {
+      const start = this.currentPageNumber * this.perPage;
+      const end = start + 25
+      return this.filteredTodoList.slice(start, end)
+    },
+
+    totalPages() {
+      return Math.ceil(this.filteredTodoList.length / this.perPage)
+    }
+  },
+
   watch: {
-    value() {
+    searchValue() {
       this.filterItems()
     }
   }
 }
 </script>
-<style scoped>
-.table {
-  width: 70%;
-  margin: 0 auto;
-}
-</style>

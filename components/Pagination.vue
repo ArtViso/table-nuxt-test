@@ -1,12 +1,14 @@
 <template>
   <div class="pagination-container">
-    <div
-      v-if="pageNumbers > 1"
-      class="pagination">
-      <button class="pagination-button" @click="decreasePageNumber">&#8592</button>
-      <div v-for="number in pageNumbers" :key="number">
+    <div class="pagination">
+      <button
+        class="pagination-button"
+        :disabled="currentPage === 0"
+        @click="decreasePageNumber">&#8592
+      </button>
+      <div v-for="number in totalPages" :key="number">
         <button
-          :class="{chosenButton: number === chosenPage + 1}"
+          :class="{active: number === currentPage + 1}"
           class="pagination-button"
           @click="changePage(number - 1)"
         >
@@ -14,7 +16,9 @@
         </button>
       </div>
       <button
-        class="pagination-button" @click="increasePageNumber">&#8594
+        class="pagination-button"
+        :disabled="currentPage === totalPages - 1"
+        @click="increasePageNumber">&#8594
       </button>
     </div>
   </div>
@@ -23,11 +27,11 @@
 export default {
   name: "Pagination",
   props: {
-    pageNumbers: {
+    totalPages: {
       default: 0,
       type: Number
     },
-    chosenPage: {
+    currentPage: {
       default: 0,
       type: Number
     }
@@ -36,11 +40,19 @@ export default {
     changePage(index) {
       this.$emit("changePage", index)
     },
+
     increasePageNumber() {
-      this.$emit("increasePageNumber")
+      if (this.currentPage === this.totalPages - 1) {
+        return
+      }
+      this.$emit("changePage", this.currentPage + 1)
     },
+
     decreasePageNumber() {
-      this.$emit("decreasePageNumber")
+      if (this.currentPage === 0) {
+        return
+      }
+      this.$emit("changePage", this.currentPage - 1)
     }
   }
 }
@@ -58,20 +70,35 @@ export default {
   }
 
   &-button {
-    padding: 10px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin: 0 5px;
     place-items: center;
-    border-radius: 10px;
-    background: rgb(161, 160, 160);
+    background: white;
+    border: solid 1px black;
     cursor: pointer;
+    transition: 0.5s;
 
     &:hover {
-      background: rgb(163, 161, 161);
+      border: solid 1px #6eb3ff;
+      color: #6eb3ff;
+    }
+
+    &:disabled {
+      border: solid 1px #d9d9d9;
+      color: #d9d9d9;
+      cursor: not-allowed;
+      background: white;
+      transition: 0.5s;
     }
   }
 
-  .chosenButton {
-    border: solid 2px green;
+  .active {
+    border: solid 1px #1890ff;
+    color: #1890ff;
   }
 }
 </style>

@@ -37,7 +37,7 @@ export default {
     &__input {
       margin: 0 auto;
       display: block;
-      width: 45%;
+      width: 60%;
       height: calc(2.25rem + 2px);
       padding: 0 15px;
       font-family: inherit;
